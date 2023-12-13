@@ -5,7 +5,11 @@ import http.client, urllib
 import os
 from dotenv import load_dotenv
 
-driver = webdriver.Chrome()
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--disable-gpu")
+driver = webdriver.Chrome(options=chrome_options)
 currentCredits = 144
 
 load_dotenv()
@@ -39,12 +43,15 @@ def login():
 
 def getCredits():
     try:
-        driver.get('https://sisxe.aub.edu.lb/StudentSelfService/ssb/studentProfile')
-        credits = driver.find_element(By.XPATH, value='/html/body/div[25]/div[2]/div[1]/ul/li[3]/span/span[2]')
-        return credits.text
+        credits = driver.find_element(By.ID, value='spp_overall_hours')
+        numberOfCredits = int(credits.text)
+        if credits==None:
+            login()
+            credits = driver.find_element(By.ID, value='spp_overall_hours')
+        return numberOfCredits
     except:
         login()
-        getCredits()
+        return getCredits()
 
 while True:
     credits = getCredits()
