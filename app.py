@@ -4,15 +4,47 @@ from selenium.webdriver.common.by import By
 import http.client, urllib
 import os
 from dotenv import load_dotenv
+import sqlite3
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--disable-gpu")
 driver = webdriver.Chrome(options=chrome_options)
-currentCredits = 144
 
 load_dotenv()
+
+def getCredits_DB():
+    # Establish a connection to the SQLite database
+    conn = sqlite3.connect('database.sqlite')
+
+    # Create a cursor object to execute SQL commands
+    cursor = conn.cursor()
+
+    # Select the value from the 'number' column of the 'credits' table
+    cursor.execute('SELECT number FROM credits')
+
+    # Fetch the result (assuming only one row exists, or use fetchone() for a single result)
+    result = cursor.fetchone()
+
+    # Close the connection
+    conn.close()
+
+    return result[0]
+
+def updateCredits(credits):
+    # Establish a connection to the SQLite database
+    conn = sqlite3.connect('database.sqlite')
+
+    # Create a cursor object to execute SQL commands
+    cursor = conn.cursor()
+
+    # Update the value in the 'number' column of the 'credits' table
+    cursor.execute('UPDATE credits SET number = ?', (credits,))
+
+    # Commit the changes and close the connection
+    conn.commit()
+    conn.close()
 
 def sendNotification():
     conn = http.client.HTTPSConnection("api.pushover.net:443")
@@ -53,9 +85,12 @@ def getCredits():
         login()
         return getCredits()
 
+currentCredits = getCredits_DB()
+
 while True:
     credits = getCredits()
     if credits != currentCredits:
         sendNotification()
+        updateCredits(credits)
         currentCredits = credits
     time.sleep(1800)
