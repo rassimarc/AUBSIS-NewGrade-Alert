@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ```env
 USER_TOKEN=<Pushover User Token>
 TOKEN=<Pushover App Token>
-AUBSISID=<AUBSis I>
+AUBSISID=<AUBSis Id>
 PASSWORD=<AUBSis Password>
 ```
 
