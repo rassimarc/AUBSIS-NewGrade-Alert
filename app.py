@@ -59,27 +59,41 @@ def sendNotification():
 
 
 def login():
-    driver.get('https://sisxe.aub.edu.lb/StudentSelfService/ssb/studentProfile')
+    driver.get('https://www-banner.aub.edu.lb/pls/weba/twbkwbis.P_WWWLogin')
 
     # Find and input username and password
-    username = driver.find_element(by='name', value='usernameUserInput')
-    password = driver.find_element(by='name',value='password')
+    username = driver.find_element(by='name', value='sid')
+    password = driver.find_element(by='name',value='PIN')
 
     username.send_keys(os.getenv('AUBSISID'))
     password.send_keys(os.getenv('PASSWORD'))
 
     # Find and click the login button
-    login_button = driver.find_element(By.XPATH, value='/html/body/main/div/div/div/form/div[9]/div[2]/button')
+    login_button = driver.find_element(By.XPATH, value='/html/body/div[19]/div[3]/div[2]/div[1]/form/div/div/button')
     login_button.click()
-    time.sleep(20)
+
+    student_services = driver.find_element(By.ID, value='bmenu--P_StuMainMnu___UID1')
+    student_services.click()
+    time.sleep(1)
+
+    student_records = driver.find_element(By.XPATH, value='/html/body/div[19]/div[3]/div[2]/div[2]/div/div[1]')
+    student_records.click()
+    time.sleep(1)
+
+    final_grades = driver.find_element(By.ID, value='contentItem12')
+    final_grades.click()
+    time.sleep(1)
+
+    submit_button = driver.find_element(By.XPATH, value='/html/body/div[3]/div[4]/div[2]/div[1]/div[3]/form/button')
+    submit_button.click()
+    time.sleep(1)
 
 def getCredits():
     try:
-        credits = driver.find_element(By.ID, value='spp_overall_hours')
-        numberOfCredits = int(credits.text)
-        if credits==None:
-            login()
-            credits = driver.find_element(By.ID, value='spp_overall_hours')
+        driver.refresh()
+        credits = driver.find_element(By.XPATH, value='/html/body/div[3]/div[4]/div[2]/div[1]/div[2]/table[3]/tbody/tr[5]/td[2]/p')
+        numberOfCredits = int(float(credits.text))
+        print(numberOfCredits)
         return numberOfCredits
     except:
         login()
@@ -88,9 +102,12 @@ def getCredits():
 currentCredits = getCredits_DB()
 
 while True:
-    credits = getCredits()
-    if credits != currentCredits:
-        sendNotification()
-        updateCredits(credits)
-        currentCredits = credits
+    try:
+        credits = getCredits()
+        if credits != currentCredits:
+            sendNotification()
+            updateCredits(credits)
+            currentCredits = credits
+    except:
+        pass
     time.sleep(1800)
